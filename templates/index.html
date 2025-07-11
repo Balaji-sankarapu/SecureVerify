@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SecureVerify</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-6">
+    <div class="max-w-3xl mx-auto bg-white shadow-lg rounded-xl p-6">
+        <h1 class="text-2xl font-bold mb-4 text-center">SecureVerify - Identity Document Validator</h1>
+
+        <form action="/upload" method="POST" enctype="multipart/form-data" class="mb-6">
+            <input type="file" name="document" accept=".jpg,.jpeg,.png,.pdf" required
+                   class="mb-4 p-2 border rounded w-full">
+            <button type="submit"
+                    class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                Upload & Verify
+            </button>
+        </form>
+
+        {% if extracted %}
+        <div class="mb-4">
+            <h2 class="font-semibold">Extracted Text:</h2>
+            <pre class="bg-gray-100 p-3 rounded border">{{ extracted }}</pre>
+        </div>
+        <div>
+            <h2 class="font-semibold">Verification Result:</h2>
+            <p class="text-green-600 font-bold">{{ status }}</p>
+        </div>
+        {% endif %}
+
+        <hr class="my-6">
+
+        <h2 class="text-xl font-semibold mb-2">Verification History</h2>
+        <table class="w-full text-sm table-auto border">
+            <thead class="bg-gray-200">
+                <tr>
+                    <th class="px-2 py-1">Timestamp</th>
+                    <th class="px-2 py-1">Filename</th>
+                    <th class="px-2 py-1">Type</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in records %}
+                <tr class="border-b">
+                    <td class="px-2 py-1">{{ record.timestamp }}</td>
+                    <td class="px-2 py-1">{{ record.filename }}</td>
+                    <td class="px-2 py-1">{{ record.document_type }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
