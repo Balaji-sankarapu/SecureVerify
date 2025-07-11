@@ -3,8 +3,29 @@ body{
 }
 .container{
     width: fit-content;
+    height: 200px;
     padding: 20px;
     background-color: blueviolet;
     border-radius: 10px;
     box-shadow: 0 0 10px;
+}
+.file-input{
+    width: 100%;
+    margin-top: 10px;
+    border-radius: 5px;
+}
+.upload-button{
+    background-color: rgb(22, 184, 243);
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.result{
+    margin-top: 20px;
+    padding: 10px;
+    background-color: rgb(22, 184, 243);
+    border-radius: 5px;
+    width: 350px;
 }
