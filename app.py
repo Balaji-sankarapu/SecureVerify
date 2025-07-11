@@ -1,76 +1,38 @@
 from flask import Flask, render_template, request
 from flask_sqlalchemy import SQLAlchemy
-import pytesseract
-from PIL import Image, UnidentifiedImageError
-from pdf2image import convert_from_path
-import os
-import re
-from datetime import datetime
 
+# Initialize Flask app and configure database
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = 'static/uploads'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///verifications.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
 db = SQLAlchemy(app)
 
-# Model Import
-from models import Verification
+# Define the model directly in this file to avoid circular imports
+class Verification(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    document_type = db.Column(db.String(50), nullable=False)
+    document_text = db.Column(db.Text, nullable=False)
 
-if not os.path.exists(app.config['UPLOAD_FOLDER']):
-    os.makedirs(app.config['UPLOAD_FOLDER'])
+# Create the database tables (only needed once or conditionally)
+with app.app_context():
+    db.create_all()
 
-# Validator function
-def identify_document(text):
-    if re.search(r"\d{4}\s\d{4}\s\d{4}", text):
-        return "Aadhaar"
-    elif re.search(r"[A-Z]{5}\d{4}[A-Z]", text):
-        return "PAN"
-    elif re.search(r"[A-Z]{1}-?\d{7}", text):
-        return "Passport"
-    return "Invalid Document"
-
-@app.route('/')
-def index():
-    records = Verification.query.order_by(Verification.timestamp.desc()).all()
-    return render_template('index.html', records=records)
-
-@app.route('/upload', methods=['POST'])
-def upload_file():
-    try:
-        file = request.files['document']
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-        file.save(filepath)
-
-        text = ""
-
-        if file.filename.lower().endswith(('.jpg', '.jpeg', '.png')):
-            text = pytesseract.image_to_string(Image.open(filepath))
-        elif file.filename.lower().endswith('.pdf'):
-            images = convert_from_path(filepath)
-            for img in images:
-                text += pytesseract.image_to_string(img)
-        else:
-            return "Only JPG, PNG or PDF files are supported.", 400
-
-        doc_type = identify_document(text)
-
-        record = Verification(
-            filename=file.filename,
-            document_type=doc_type,
-            extracted_text=text
-        )
-        db.session.add(record)
+# Example route
+@app.route('/', methods=['GET', 'POST'])
+def home():
+    if request.method == 'POST':
+        doc_type = request.form['doc_type']
+        doc_text = request.form['doc_text']
+        new_verification = Verification(document_type=doc_type, document_text=doc_text)
+        db.session.add(new_verification)
         db.session.commit()
-
-        records = Verification.query.order_by(Verification.timestamp.desc()).all()
-        return render_template('index.html', extracted=text, status=doc_type, records=records)
-
-    except UnidentifiedImageError:
-        return "❌ Invalid image format", 400
-    except Exception as e:
-        return f"❌ Error: {str(e)}", 500
+        return 'Document saved!'
+    return '''
+        <form method="post">
+            Document Type: <input type="text" name="doc_type"><br>
+            Document Text: <textarea name="doc_text"></textarea><br>
+            <input type="submit">
+        </form>
+    '''
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
     app.run(debug=True)
