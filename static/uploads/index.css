@@ -1,0 +1,10 @@
+body{
+    background-color: aqua;
+}
+.container{
+    width: fit-content;
+    padding: 20px;
+    background-color: blueviolet;
+    border-radius: 10px;
+    box-shadow: 0 0 10px;
+}
