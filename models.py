@@ -1,9 +1,7 @@
-from app import db
-from datetime import datetime
+# models.py
+from extensions import db
 
 class Verification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    filename = db.Column(db.String(100))
-    document_type = db.Column(db.String(20))
+    document_type = db.Column(db.String(100))
     extracted_text = db.Column(db.Text)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
